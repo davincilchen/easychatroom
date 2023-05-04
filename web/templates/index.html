@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Chat Room</title>
+  </head>
+  <body>
+    <h1>Chat Room</h1>
+    <div id="message-list"></div>
+    <form id="message-form">
+      <input type="text" name="user" placeholder="Username">
+      <input type="text" name="content" placeholder="Message">
+      <button type="submit">Send</button>
+    </form>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+      $(document).ready(function() {
+        // 獲取所有消息
+        $.getJSON("/messages", function(messages) {
+          messages.forEach(function(message) {
+            addMessageToUI(message);
+          });
+        });
+
+        // 監聽消息表單提交
+        $("#message-form").submit(function(event) {
+          event.preventDefault();
+
+          var message = {
+            user: $("input[name='user']").val(),
+            content: $("input[name='content']").val()
+          };
+
+          // 發送消息
+          $.ajax({
+            type: "POST",
+            url: "/message",
+            data: JSON.stringify(message),
+            contentType: "application/json",
+            success: function() {
+              addMessageToUI(message);
+              $("input[name='content']").val("");
+            },
+            error: function() {
+              alert("Failed to send message");
+            }
+          });
+        });
+
+        // 將消息添加到UI
+        function addMessageToUI(message) {
+          var $message = $("<div>")
+            .addClass("message")
+            .append($("<strong>").text(message.user + ": "))
+            .append($("<span>").text(message.content));
+
+          $("#message-list").append($message);
+        }
+      });
+    </script>
+  </body>
+</html>
